@@ -6,7 +6,7 @@ import pprint
 pp = pprint.PrettyPrinter(indent=0)
 
 
-def list_exchanges():
+def list_exchanges() -> None:
     """Lists all available exchanges in ccxt."""
     for exchange in ccxt.exchanges:
         print(exchange)
@@ -19,7 +19,7 @@ class exchange_info:
         self.exchange = getattr(ccxt, exchange_id)
         self.market = self.exchange().load_markets()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Instance Description"""
         return f"Current exchange: {self.exchange()}"
 
@@ -28,12 +28,12 @@ class exchange_info:
         self.exchange = getattr(ccxt, exchange_id)
         self.market = self.exchange().load_markets()
 
-    def update_exchange_market(self):
+    def update_exchange_market(self) -> None:
         """Updates instance market"""
         # Available Currency trades in current exchange AND ITS INFO
         self.market = self.exchange().load_markets()
 
-    def print_markets(self):
+    def print_markets(self) -> None:
         """Lists reverse sorted list of all available markets in current exchange"""
         sorted_market = sorted(self.market.keys(), reverse=True)
         for market in sorted_market:
@@ -52,7 +52,7 @@ class market_info:
         if not self.__valid_market:
             print(f"{self.crypto_a}/{self.crypto_b} is not a valid market")
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Crypto market Symbols"""
         if self.__valid_market:
             return f"{self.crypto_a}/{self.crypto_b}"
