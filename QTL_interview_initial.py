@@ -21,7 +21,7 @@ class exchange_info:
 
     def __str__(self):
         """Instance Description"""
-        return f"Current exchange is {self.exchange()}"
+        return f"Current exchange: {self.exchange()}"
 
     def update_exchange(self, exchange_id: str) -> None:
         """Updates instance exchange"""
@@ -34,7 +34,7 @@ class exchange_info:
         self.market = self.exchange().load_markets()
 
     def print_markets(self):
-        """Lists all available markets in current exchange"""
+        """Lists reverse sorted list of all available markets in current exchange"""
         sorted_market = sorted(self.market.keys(), reverse=True)
         for market in sorted_market:
             print(market)
@@ -47,50 +47,34 @@ class market_info:
         self.crypto_a: str = crypto_a.upper()  # Crypto symbol in capital letters
         self.crypto_b: str = crypto_b.upper()  #
         # True only if market extists in exchange
-        self.valid_market = self.check_valid_market()
-        self.ticker = None
+        self.__valid_market = self.check_valid_market()
         self.last_orderbook = None
-        if self.valid_market:
-            print(f"{self.crypto_a}/{self.crypto_b} is a valid market")
-        else:
+        if not self.__valid_market:
             print(f"{self.crypto_a}/{self.crypto_b} is not a valid market")
 
     def __str__(self):
-        """Market Symbols"""
-        return f"{self.crypto_a}/{self.crypto_b}"
+        """Crypto market Symbols"""
+        if self.__valid_market:
+            return f"{self.crypto_a}/{self.crypto_b}"
+        else:
+            return("Please define a valid market before trying to get crypto symbols")
 
     def check_valid_market(self) -> bool:
         """True only if market extists in exchange"""
         return (self.crypto_a.upper() + "/" + self.crypto_b.upper()) in self.exchange_info.market
 
-    def update_market_ticker(self) -> None:
-        """Updates instance ticker if market is valid"""
-        if self.valid_market:
-            self.ticker = self.exchange_info.exchange().fetch_ticker(
-                self.crypto_a + "/" + self.crypto_b
-            )
-        else:
-            print("Please define a valid market before trying to update the TICKER")
-
     def update_market_orderbook(self) -> None:
         """Updates instance orderbook if market is valid"""
-        if self.valid_market:
+        if self.__valid_market:
             self.last_orderbook = self.exchange_info.exchange().fetch_order_book(
                 self.crypto_a + "/" + self.crypto_b
             )
         else:
             print("Please define a valid market before trying to update the ORDERBOOK")
 
-    def get_ticker_info(self, info: str) -> str:
-        """Returns "info" parameter of the ticker if market is valid and the ticker is not None"""
-        if self.valid_market and self.ticker:
-            return self.ticker.get(info, info + "is not defined in the TICKER, please specify a valid one before trying to get ticker info")
-        else:
-            return "Please define a valid market before trying to get TICKER info"
-
     def get_orderbook_info(self, info: str) -> str:
         """Returns "info" parameter of the orderbook if market is valid and the orderbook is not None"""
-        if self.valid_market and self.last_orderbook[info] and len(self.last_orderbook[info]) > 0:
+        if self.__valid_market and self.last_orderbook[info] and len(self.last_orderbook[info]) > 0:
             return self.last_orderbook.get(info, info + "is not defined in the ORDERBOOK, please specify a valid one before trying to get orderbook info")
         else:
             return "Please define a valid market before trying to get ORDERBOOK info"
@@ -106,7 +90,7 @@ while True:
     btc_usdt.update_market_orderbook()
     # bids structure: 'bids': [ [ price, amount ], ... , []]
     btc_bid = btc_usdt.get_orderbook_info("bids")[0][0]
-    # ask structure: 'bids': [ [ price, amount ], ... , []]
+    # ask structure: 'asks': [ [ price, amount ], ... , []]
     btc_ask = btc_usdt.get_orderbook_info("asks")[0][0]
 
     eth_usdt.update_market_orderbook()
@@ -116,15 +100,8 @@ while True:
     btc_eth_ratio = float(btc_bid)/float(eth_ask)
     eth_btc_ratio = float(eth_bid)/float(btc_ask)
 
-    btc_usdt.update_market_ticker()
-    eth_usdt.update_market_ticker()
-
     print("")
-    pp.pprint(btc_usdt.ticker)
-    print("")
-
-    print("")
-    pp.pprint(eth_usdt.ticker)
+    pp.pprint(btc_usdt.__str__() + ", " + eth_usdt.__str__())
     print("")
 
     print("Date/time:", datetime.now())
@@ -133,5 +110,6 @@ while True:
 
     print("BTC/ETH ratio:", btc_eth_ratio)
     print("ETH/BTC ratio:", eth_btc_ratio)
+    print("--------------------------------")
 
     sleep(t_delay)  # rate limit
